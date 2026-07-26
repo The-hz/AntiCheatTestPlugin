@@ -1,4 +1,29 @@
 name: ACTestPlugin
-version: '1.0.0'
+version: '${version}'
 main: ac.test.PluginLoader
 api-version: '1.20'
+author: ACTest
+softdepend: [Citizens]
+
+commands:
+  actest:
+    description: 反作弊测试服主命令
+    usage: /actest <subcommand>
+    permission: actest.admin
+  spawnbot:
+    description: 生成假人
+    usage: /spawnbot <type> [name]
+    permission: actest.admin
+  removebot:
+    description: 移除假人
+    usage: /removebot [name]
+    permission: actest.admin
+  buildzone:
+    description: 搭路测试区管理
+    usage: /buildzone <create|remove|clear|list|pos1|pos2>
+    permission: actest.admin
+
+permissions:
+  actest.admin:
+    default: op
+    description: 反作弊测试服管理权限

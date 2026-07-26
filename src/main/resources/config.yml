@@ -1,0 +1,35 @@
+# AC Test Plugin 配置文件
+
+# 假人配置
+# 服务器启动时会自动加载这些假人
+bots:
+  # 示例假人配置:
+  # testbot:
+  #   type: stationary
+  #   location:
+  #     world: world
+  #     x: 0
+  #     y: 100
+  #     z: 0
+  #     yaw: 0
+  #     pitch: 0
+
+# 搭路测试区配置
+buildzones:
+  # 示例搭路区配置:
+  # testzone:
+  #   world: world
+  #   corner1:
+  #     x: 0
+  #     y: 100
+  #     z: 0
+  #   corner2:
+  #     x: 50
+  #     y: 120
+   #     z: 50
+  #   clearInterval: 300  # 清理间隔（秒）
+
+# 计分板配置
+scoreboard:
+  enabled: true
+  updateInterval: 5  # 更新间隔（tick）
