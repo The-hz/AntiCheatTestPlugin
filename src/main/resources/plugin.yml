@@ -3,7 +3,7 @@ version: '${version}'
 main: ac.test.PluginLoader
 api-version: '1.20'
 author: ACTest
-softdepend: [Citizens]
+depend: [Citizens]  # 改为硬依赖，保证 Citizens 先加载
 
 commands:
   actest:

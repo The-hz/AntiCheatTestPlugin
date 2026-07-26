@@ -20,7 +20,7 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.20.6-R0.1-SNAPSHOT")
-    compileOnly("net.citizensnpcs:citizensapi:2.0.35-SNAPSHOT")
+    compileOnly("net.citizensnpcs:citizensapi:2.0.40-SNAPSHOT")
 }
 
 tasks {
@@ -28,7 +28,7 @@ tasks {
         // Configure the Minecraft version for our task.
         // This is the only required configuration besides applying the plugin.
         // Your plugin's jar (or shadowJar if present) will be used automatically.
-        minecraftVersion("1.20")
+        minecraftVersion("1.20.6")
     }
 }
 
