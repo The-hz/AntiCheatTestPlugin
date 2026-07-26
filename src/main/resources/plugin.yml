@@ -1,0 +1,4 @@
+name: ACTestPlugin
+version: '1.0.0'
+main: ac.test.PluginLoader
+api-version: '1.20'
