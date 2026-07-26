@@ -12,6 +12,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class PluginLoader extends JavaPlugin {
 
+    //vibe coding
+
     private static PluginLoader instance;
     private BotManager botManager;
     private BuildZoneManager buildZoneManager;
