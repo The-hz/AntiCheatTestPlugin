@@ -1,2 +1,25 @@
 # 项目排除路径
 /.gradle/
+/build/
+/.idea/
+
+# 编译输出
+*.class
+*.jar
+*.war
+*.ear
+
+# IDE
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.swp
+*.swo
+
+# 日志
+*.log
+
+# 操作系统
+.DS_Store
+Thumbs.db
