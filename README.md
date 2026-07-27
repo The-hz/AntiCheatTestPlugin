@@ -14,8 +14,14 @@
 | **被动假人 (passive)** | 受击不还手、可死亡、有击退 |
 | **反击假人 (counter)** | 被攻击时反击一下、无敌、无击退 |
 
+**特性说明：**
+- PVP假人和反击假人攻击时会造成伤害并产生击退效果
+- 假人死亡后会在5秒后自动重生
+- 使用 ShutdownHook 机制确保服务器重启时不会重复生成假人
+
 ### 2. 搭路测试区
 - 定时自动清理区域内的方块
+- 可自定义清理间隔时间（秒）
 - 智能延迟：清理时如果区域内有人，自动延后60秒
 - 支持多区域管理
 
@@ -60,13 +66,26 @@
 /removebot [name]          - 移除假人（不填名字则移除最近的）
 ```
 
+**假人类型：** `stationary`, `pvp`, `passive`, `counter`
+
 ### 搭路区管理
 ```
-/buildzone pos1                 - 设置第一个角落
-/buildzone pos2 <name>          - 设置第二个角落并创建区域
-/buildzone remove <name>        - 删除区域
-/buildzone clear [name]         - 立即清理区域
-/buildzone list                 - 列出所有区域
+/buildzone pos1                          - 设置第一个角落
+/buildzone pos2 <name> [interval]        - 设置第二个角落并创建区域
+/buildzone remove <name>                 - 删除区域
+/buildzone clear [name]                  - 立即清理区域
+/buildzone list                          - 列出所有区域
+/buildzone setinterval <name> <seconds>  - 设置清理间隔
+```
+
+**参数说明：**
+- `interval` - 清理间隔时间（秒），默认300秒（5分钟），最小10秒
+
+**示例：**
+```
+/buildzone pos2 myzone        - 创建区域，默认5分钟清理
+/buildzone pos2 myzone 60     - 创建区域，1分钟清理
+/buildzone setinterval myzone 120  - 修改myzone的清理间隔为2分钟
 ```
 
 ## 权限
@@ -102,7 +121,12 @@ buildzones:
       x: 50
       y: 120
       z: 50
-    clearInterval: 300
+    clearInterval: 300  # 清理间隔（秒）
+
+# 计分板配置
+scoreboard:
+  enabled: true
+  updateInterval: 2  # 更新间隔（tick）
 ```
 
 ## 开发
@@ -117,11 +141,23 @@ buildzones:
 ./gradlew runServer
 ```
 
+## 技术亮点
+
+### 假人重复生成问题解决方案
+使用 JVM ShutdownHook 机制，在服务器关闭时直接操作 Citizens 的 `saves.yml` 文件，移除本插件管理的假人条目，确保下次启动时不会重复生成。
+
+```java
+Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+    cleanupCitizensSavesYaml();
+}));
+```
+
 ## 适用场景
 
 - 反作弊测试
 - PVP 机制测试
 - 客户端验证
+- 搭路练习
 
 ## 开源协议
 

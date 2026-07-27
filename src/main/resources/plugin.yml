@@ -20,7 +20,7 @@ commands:
     permission: actest.admin
   buildzone:
     description: 搭路测试区管理
-    usage: /buildzone <create|remove|clear|list|pos1|pos2>
+    usage: /buildzone <create|remove|clear|list|pos1|pos2|setinterval>
     permission: actest.admin
 
 permissions:
