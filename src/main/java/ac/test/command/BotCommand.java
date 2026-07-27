@@ -73,7 +73,7 @@ public class BotCommand implements CommandExecutor {
         BotData bot = plugin.getBotManager().createBot(name, type, location);
         
         if (bot != null) {
-            plugin.getBotManager().saveBotToConfig(name, type, location);
+            plugin.getBotManager().saveBotToConfig(name, type, location, bot.getNpc().getUniqueId());
             player.sendMessage(ChatColor.GREEN + "成功生成 " + type.getDisplayName() + ": " + name);
         } else {
             player.sendMessage(ChatColor.RED + "生成假人失败");
