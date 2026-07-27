@@ -267,14 +267,6 @@ public class BotManager implements Listener {
         return false;
     }
 
-    public void removeAllBots() {
-        for (BotData bot : new ArrayList<>(bots.values())) {
-            bot.getNpc().destroy();
-        }
-        bots.clear();
-        npcIdToBotMap.clear();
-    }
-
     public BotData getBot(String name) {
         return bots.get(name);
     }
@@ -355,16 +347,12 @@ public class BotManager implements Listener {
     }
 
     private void counterAttack(NPC npc, Player target) {
-        // 反击一下
         target.damage(1.0);
-        
-        // 添加击退效果
+
         applyKnockback(npc, target);
-        
-        // 面向目标
+
         faceTarget(npc, target);
-        
-        // 挥动手臂
+
         if (npc.getEntity() instanceof Player) {
             Player botPlayer = (Player) npc.getEntity();
             botPlayer.swingMainHand();
@@ -374,7 +362,6 @@ public class BotManager implements Listener {
     private void playHurtAnimation(NPC npc) {
         if (npc.getEntity() instanceof Player) {
             Player botPlayer = (Player) npc.getEntity();
-            // 播放受击动画
             botPlayer.playHurtAnimation(0);
         }
     }
@@ -383,11 +370,12 @@ public class BotManager implements Listener {
         bot.setAlive(false);
         bot.setRespawnDelay(100); // 5秒后重生
         
-        // 播放死亡动画
         NPC npc = bot.getNpc();
         if (npc != null && npc.isSpawned()) {
+            // 播放死亡动画
             if (npc.getEntity() instanceof Player) {
-                // 死亡效果
+                Player botPlayer = (Player) npc.getEntity();
+                botPlayer.playHurtAnimation(0);
             }
             npc.despawn();
         }
@@ -408,9 +396,6 @@ public class BotManager implements Listener {
     }
 
     public void loadBotsFromConfig() {
-        removeAllBots();
-        cleanupCitizensNPCs();
-        
         ConfigurationSection botsSection = plugin.getConfig().getConfigurationSection("bots");
         if (botsSection == null) {
             return;
@@ -467,13 +452,11 @@ public class BotManager implements Listener {
     }
 
     private void cleanupCitizensNPCs() {
-        // 获取配置中所有假人名称
         ConfigurationSection botsSection = plugin.getConfig().getConfigurationSection("bots");
         if (botsSection == null) return;
         
         Set<String> botNames = botsSection.getKeys(false);
-        
-        // 遍历Citizens中所有NPC，删除名称匹配的
+
         NPCRegistry registry = CitizensAPI.getNPCRegistry();
         for (NPC npc : registry) {
             if (npc.getName() != null && botNames.contains(npc.getName())) {
