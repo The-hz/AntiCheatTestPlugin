@@ -1,9 +1,9 @@
 name: ACTestPlugin
-version: '${version}'
+version: '1.0.1'
 main: ac.test.PluginLoader
 api-version: '1.20'
 author: ACTest
-depend: [Citizens]  # 改为硬依赖，保证 Citizens 先加载
+depend: [Citizens]
 
 commands:
   actest:
