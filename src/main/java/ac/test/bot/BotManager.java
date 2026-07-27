@@ -186,10 +186,35 @@ public class BotManager implements Listener {
         // 模拟攻击
         target.damage(1.0);
         
+        // 添加击退效果
+        applyKnockback(npc, target);
+        
         // 播放挥动手臂动画
         if (npc.getEntity() instanceof Player) {
             Player botPlayer = (Player) npc.getEntity();
             botPlayer.swingMainHand();
+        }
+    }
+
+    private void applyKnockback(NPC npc, Player target) {
+        Location botLoc = npc.getStoredLocation();
+        Location targetLoc = target.getLocation();
+        
+        // 计算击退方向（从假人指向目标）
+        double dx = targetLoc.getX() - botLoc.getX();
+        double dz = targetLoc.getZ() - botLoc.getZ();
+        double distance = Math.sqrt(dx * dx + dz * dz);
+        
+        if (distance > 0) {
+            // 归一化并设置击退强度
+            double knockbackStrength = 0.4;
+            double verticalStrength = 0.4;
+            
+            dx /= distance;
+            dz /= distance;
+            
+            // 设置速度向量（水平击退 + 轻微向上）
+            target.setVelocity(new org.bukkit.util.Vector(dx * knockbackStrength, verticalStrength, dz * knockbackStrength));
         }
     }
 
@@ -332,6 +357,9 @@ public class BotManager implements Listener {
     private void counterAttack(NPC npc, Player target) {
         // 反击一下
         target.damage(1.0);
+        
+        // 添加击退效果
+        applyKnockback(npc, target);
         
         // 面向目标
         faceTarget(npc, target);
