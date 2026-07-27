@@ -450,19 +450,4 @@ public class BotManager implements Listener {
         plugin.getConfig().set("bots." + name, null);
         plugin.saveConfig();
     }
-
-    private void cleanupCitizensNPCs() {
-        ConfigurationSection botsSection = plugin.getConfig().getConfigurationSection("bots");
-        if (botsSection == null) return;
-        
-        Set<String> botNames = botsSection.getKeys(false);
-
-        NPCRegistry registry = CitizensAPI.getNPCRegistry();
-        for (NPC npc : registry) {
-            if (npc.getName() != null && botNames.contains(npc.getName())) {
-                npc.destroy();
-                plugin.getLogger().info("清理残留NPC: " + npc.getName());
-            }
-        }
-    }
 }

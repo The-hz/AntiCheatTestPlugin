@@ -49,6 +49,8 @@ public class BuildZoneCommand implements CommandExecutor {
                 return handlePos1(player);
             case "pos2":
                 return handlePos2(player, args);
+            case "setinterval":
+                return handleSetInterval(player, args);
             default:
                 sendHelp(player);
                 return true;
@@ -58,10 +60,11 @@ public class BuildZoneCommand implements CommandExecutor {
     private void sendHelp(Player player) {
         player.sendMessage(ChatColor.GOLD + "========== 搭路区管理 ==========");
         player.sendMessage(ChatColor.YELLOW + "/buildzone pos1" + ChatColor.WHITE + " - 设置第一个角落");
-        player.sendMessage(ChatColor.YELLOW + "/buildzone pos2 <name>" + ChatColor.WHITE + " - 设置第二个角落并创建区域");
+        player.sendMessage(ChatColor.YELLOW + "/buildzone pos2 <name> [interval]" + ChatColor.WHITE + " - 设置第二个角落并创建区域（interval为清理间隔秒数，默认300）");
         player.sendMessage(ChatColor.YELLOW + "/buildzone remove <name>" + ChatColor.WHITE + " - 删除区域");
         player.sendMessage(ChatColor.YELLOW + "/buildzone clear <name>" + ChatColor.WHITE + " - 立即清理区域");
         player.sendMessage(ChatColor.YELLOW + "/buildzone list" + ChatColor.WHITE + " - 列出所有区域");
+        player.sendMessage(ChatColor.YELLOW + "/buildzone setinterval <name> <seconds>" + ChatColor.WHITE + " - 设置清理间隔");
     }
 
     private boolean handlePos1(Player player) {
@@ -73,7 +76,7 @@ public class BuildZoneCommand implements CommandExecutor {
 
     private boolean handlePos2(Player player, String[] args) {
         if (args.length < 2) {
-            player.sendMessage(ChatColor.RED + "用法: /buildzone pos2 <name>");
+            player.sendMessage(ChatColor.RED + "用法: /buildzone pos2 <name> [interval]");
             return true;
         }
 
@@ -91,10 +94,26 @@ public class BuildZoneCommand implements CommandExecutor {
         String name = args[1];
         Location corner2 = player.getLocation();
 
-        BuildZone zone = plugin.getBuildZoneManager().createZone(name, corner1, corner2);
+        // 解析清理间隔（可选参数）
+        int interval = 300; // 默认5分钟
+        if (args.length >= 3) {
+            try {
+                interval = Integer.parseInt(args[2]);
+                if (interval < 10) {
+                    player.sendMessage(ChatColor.RED + "清理间隔不能小于10秒");
+                    return true;
+                }
+            } catch (NumberFormatException e) {
+                player.sendMessage(ChatColor.RED + "清理间隔必须是数字（秒）");
+                return true;
+            }
+        }
+
+        BuildZone zone = plugin.getBuildZoneManager().createZone(name, corner1, corner2, interval);
         if (zone != null) {
             player.sendMessage(ChatColor.GREEN + "成功创建搭路区: " + name);
             player.sendMessage(ChatColor.GRAY + "范围: " + formatLocation(corner1) + " 到 " + formatLocation(corner2));
+            player.sendMessage(ChatColor.GRAY + "清理间隔: " + interval + "秒");
             corner1Map.remove(player.getUniqueId());
         } else {
             player.sendMessage(ChatColor.RED + "创建失败，可能已存在同名区域");
@@ -165,6 +184,36 @@ public class BuildZoneCommand implements CommandExecutor {
                 " (清理间隔: " + zone.getClearInterval() + "秒)");
         }
 
+        return true;
+    }
+
+    private boolean handleSetInterval(Player player, String[] args) {
+        if (args.length < 3) {
+            player.sendMessage(ChatColor.RED + "用法: /buildzone setinterval <name> <seconds>");
+            return true;
+        }
+
+        String name = args[1];
+        int interval;
+        try {
+            interval = Integer.parseInt(args[2]);
+            if (interval < 10) {
+                player.sendMessage(ChatColor.RED + "清理间隔不能小于10秒");
+                return true;
+            }
+        } catch (NumberFormatException e) {
+            player.sendMessage(ChatColor.RED + "清理间隔必须是数字（秒）");
+            return true;
+        }
+
+        BuildZone zone = plugin.getBuildZoneManager().getZone(name);
+        if (zone == null) {
+            player.sendMessage(ChatColor.RED + "找不到搭路区: " + name);
+            return true;
+        }
+
+        plugin.getBuildZoneManager().setZoneInterval(name, interval);
+        player.sendMessage(ChatColor.GREEN + "已设置搭路区 " + name + " 的清理间隔为 " + interval + " 秒");
         return true;
     }
 

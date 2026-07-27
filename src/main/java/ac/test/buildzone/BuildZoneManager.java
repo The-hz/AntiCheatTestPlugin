@@ -110,15 +110,29 @@ public class BuildZoneManager {
     }
 
     public BuildZone createZone(String name, Location corner1, Location corner2) {
+        return createZone(name, corner1, corner2, 300);
+    }
+
+    public BuildZone createZone(String name, Location corner1, Location corner2, int clearInterval) {
         if (zones.containsKey(name)) {
             return null;
         }
 
         BuildZone zone = new BuildZone(name, corner1, corner2);
+        zone.setClearInterval(clearInterval);
         zones.put(name, zone);
-        saveZoneToConfig(name, corner1, corner2);
-        plugin.getLogger().info("创建搭路区: " + name);
+        saveZoneToConfig(name, corner1, corner2, clearInterval);
+        plugin.getLogger().info("创建搭路区: " + name + " (清理间隔: " + clearInterval + "秒)");
         return zone;
+    }
+
+    public void setZoneInterval(String name, int interval) {
+        BuildZone zone = zones.get(name);
+        if (zone != null) {
+            zone.setClearInterval(interval);
+            updateZoneIntervalInConfig(name, interval);
+            plugin.getLogger().info("更新搭路区 " + name + " 的清理间隔为 " + interval + "秒");
+        }
     }
 
     public boolean removeZone(String name) {
@@ -184,7 +198,7 @@ public class BuildZoneManager {
         }
     }
 
-    public void saveZoneToConfig(String name, Location corner1, Location corner2) {
+    public void saveZoneToConfig(String name, Location corner1, Location corner2, int clearInterval) {
         String path = "buildzones." + name;
         plugin.getConfig().set(path + ".world", corner1.getWorld().getName());
         plugin.getConfig().set(path + ".corner1.x", corner1.getX());
@@ -193,7 +207,13 @@ public class BuildZoneManager {
         plugin.getConfig().set(path + ".corner2.x", corner2.getX());
         plugin.getConfig().set(path + ".corner2.y", corner2.getY());
         plugin.getConfig().set(path + ".corner2.z", corner2.getZ());
-        plugin.getConfig().set(path + ".clearInterval", 300);
+        plugin.getConfig().set(path + ".clearInterval", clearInterval);
+        plugin.saveConfig();
+    }
+
+    public void updateZoneIntervalInConfig(String name, int interval) {
+        String path = "buildzones." + name + ".clearInterval";
+        plugin.getConfig().set(path, interval);
         plugin.saveConfig();
     }
 
