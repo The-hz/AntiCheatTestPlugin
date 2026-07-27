@@ -408,6 +408,9 @@ public class BotManager implements Listener {
     }
 
     public void loadBotsFromConfig() {
+        removeAllBots();
+        cleanupCitizensNPCs();
+        
         ConfigurationSection botsSection = plugin.getConfig().getConfigurationSection("bots");
         if (botsSection == null) {
             return;
@@ -461,5 +464,22 @@ public class BotManager implements Listener {
     public void removeBotFromConfig(String name) {
         plugin.getConfig().set("bots." + name, null);
         plugin.saveConfig();
+    }
+
+    private void cleanupCitizensNPCs() {
+        // 获取配置中所有假人名称
+        ConfigurationSection botsSection = plugin.getConfig().getConfigurationSection("bots");
+        if (botsSection == null) return;
+        
+        Set<String> botNames = botsSection.getKeys(false);
+        
+        // 遍历Citizens中所有NPC，删除名称匹配的
+        NPCRegistry registry = CitizensAPI.getNPCRegistry();
+        for (NPC npc : registry) {
+            if (npc.getName() != null && botNames.contains(npc.getName())) {
+                npc.destroy();
+                plugin.getLogger().info("清理残留NPC: " + npc.getName());
+            }
+        }
     }
 }

@@ -2,6 +2,7 @@
 /.gradle/
 /build/
 /.idea/
+/run/
 
 # 编译输出
 *.class
