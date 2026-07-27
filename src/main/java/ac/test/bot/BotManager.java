@@ -2,6 +2,7 @@ package ac.test.bot;
 
 import ac.test.PluginLoader;
 import net.citizensnpcs.api.CitizensAPI;
+import net.citizensnpcs.api.event.NPCCreateEvent;
 import net.citizensnpcs.api.npc.NPC;
 import net.citizensnpcs.api.npc.NPCRegistry;
 import org.bukkit.Bukkit;
@@ -16,6 +17,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.io.File;
 import java.util.*;
 
 public class BotManager implements Listener {
@@ -219,6 +221,10 @@ public class BotManager implements Listener {
     }
 
     public BotData createBot(String name, BotType type, Location location) {
+        return createBot(name, type, location, null);
+    }
+
+    public BotData createBot(String name, BotType type, Location location, UUID storedUuid) {
         if (bots.containsKey(name)) {
             return null;
         }
@@ -236,7 +242,10 @@ public class BotManager implements Listener {
         // 根据类型设置属性
         setupBotByType(botData);
 
-        plugin.getLogger().info("生成假人: " + name + " (" + type.getDisplayName() + ")");
+        // 保存到配置，同时存储UUID
+        saveBotToConfig(name, type, location, npc.getUniqueId());
+
+        plugin.getLogger().info("生成假人: " + name + " (" + type.getDisplayName() + "), UUID: " + npc.getUniqueId());
         return botData;
     }
 
@@ -430,11 +439,13 @@ public class BotManager implements Listener {
             }
 
             Location location = new Location(world, x, y, z, yaw, pitch);
-            createBot(botName, type, location);
+            String uuidStr = botSection.getString("uuid");
+            UUID storedUuid = uuidStr != null ? UUID.fromString(uuidStr) : null;
+            createBot(botName, type, location, storedUuid);
         }
     }
 
-    public void saveBotToConfig(String name, BotType type, Location location) {
+    public void saveBotToConfig(String name, BotType type, Location location, UUID npcId) {
         String path = "bots." + name;
         plugin.getConfig().set(path + ".type", type.getId());
         plugin.getConfig().set(path + ".location.world", location.getWorld().getName());
@@ -443,11 +454,52 @@ public class BotManager implements Listener {
         plugin.getConfig().set(path + ".location.z", location.getZ());
         plugin.getConfig().set(path + ".location.yaw", location.getYaw());
         plugin.getConfig().set(path + ".location.pitch", location.getPitch());
+        plugin.getConfig().set(path + ".uuid", npcId.toString());
         plugin.saveConfig();
     }
 
     public void removeBotFromConfig(String name) {
         plugin.getConfig().set("bots." + name, null);
         plugin.saveConfig();
+    }
+
+    @EventHandler
+    public void onNPCCreate(NPCCreateEvent event) {
+        NPC npc = event.getNPC();
+        if (npc == null || npc.getName() == null) {
+            return;
+        }
+
+        ConfigurationSection botsSection = plugin.getConfig().getConfigurationSection("bots");
+        if (botsSection == null) {
+            return;
+        }
+
+        String npcName = npc.getName();
+        ConfigurationSection botSection = botsSection.getConfigurationSection(npcName);
+        if (botSection == null) {
+            return;
+        }
+
+        // 获取配置中存储的UUID
+        String storedUuidStr = botSection.getString("uuid");
+        if (storedUuidStr == null) {
+            // 没有UUID记录，可能是旧配置，直接移除
+            plugin.getLogger().info("检测到无UUID记录的假人: " + npcName + "，正在销毁...");
+            npc.destroy();
+            return;
+        }
+
+        int storedUuidHash = UUID.fromString(storedUuidStr).hashCode();
+        int npcUuidHash = npc.getUniqueId().hashCode();
+
+        String npcUuidStr = npc.getUniqueId().toString();
+
+        // 比对UUID
+        if (storedUuidHash != npcUuidHash) {
+            plugin.getLogger().info("检测到UUID不匹配的重复假人: " + npcName +
+                " (配置UUID: " + storedUuidStr + ", Citizens UUID: " + npcUuidStr + ")，正在销毁...");
+            npc.destroy();
+        }
     }
 }
